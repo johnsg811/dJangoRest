@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
-from django.contrib.auth.models import User
-
+from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES, User, LocationInfo
 
 class SnippetSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -10,11 +8,10 @@ class SnippetSerializer(serializers.ModelSerializer):
     linenos = serializers.BooleanField(required=False)
     language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
     style = serializers.ChoiceField(choices=STYLE_CHOICES, default='friendly')
-    owner = serializers.ReadOnlyField(source='owner.username')
 
     class Meta:
         model = Snippet
-        fields = ('id', 'title', 'code', 'linenos', 'language', 'style', 'owner')
+        fields = ('id', 'title', 'code', 'linenos', 'language', 'style')
 
     def create(self, validated_data):
         """
@@ -35,8 +32,26 @@ class SnippetSerializer(serializers.ModelSerializer):
         return instance
 
 class UserSerializer(serializers.ModelSerializer):
-    snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
+    username = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    password = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    email = serializers.CharField(required=False, allow_blank=True, max_length=100)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'snippets')
+        fields = ('id','username', 'password','email')
+
+    def create(self, validated_data):
+        """
+        Create and return a new `User` instance, given the validated data.
+        """
+        return User.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Update and return an existing `User` instance, given the validated data.
+        """
+        instance.username = validated_data.get('username', instance.title)
+        instance.password = validated_data.get('password', instance.code)
+        instance.email = validated_data.get('email', instance.linenos)
+        instance.save()
+        return instance
