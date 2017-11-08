@@ -31,6 +31,6 @@ class User(models.Model):
 
 
 class LocationInfo(models.Model):
-    latitude = models.IntegerField(max_length=100, blank=True, default='')
-    longitude = models.IntegerField(max_length=100, blank=True, default='')
-    name = models.CharField(max_length=100, blank=True, default='')
+    latitude = models.IntegerField(blank=True, default='')
+    longitude = models.IntegerField(blank=True, default='')
+    name = models.IntegerField(blank=True, default='')
