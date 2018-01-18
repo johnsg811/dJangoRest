@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES, User, LocationInfo
+from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES, User, Map, LocationInfo
+from django.contrib.auth.models import User
 
 class SnippetSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -31,6 +32,15 @@ class SnippetSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+# class UserAuthSerializer(serializers.ModelSerializer):
+#     snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
+#
+#     class Meta:
+#         model = User
+#         fields = ('id', 'username', 'snippets')
+
+
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True, allow_blank=True, max_length=100)
     password = serializers.CharField(required=False, allow_blank=True, max_length=100)
@@ -55,3 +65,44 @@ class UserSerializer(serializers.ModelSerializer):
         instance.email = validated_data.get('email', instance.linenos)
         instance.save()
         return instance
+
+    # owner = serializers.ReadOnlyField(source='owner.username')
+
+
+class MapSerializer(serializers.ModelSerializer):
+
+    lat = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    lon = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    addr = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    amenity = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    cuisine = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    name = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    opening_hours = serializers.CharField(required=True, allow_blank=True, max_length=100)
+    website = serializers.CharField(required=True, allow_blank=True, max_length=100)
+
+
+    class Meta:
+        model = Map
+        fields = ('id', 'lat', 'lon', 'addr', 'amenity', 'cuisine', 'name', 'opening_hours', 'website')
+
+    def create(self, validated_data):
+        """
+        Create and return a new `User` instance, given the validated data.
+        """
+        return Map.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Update and return an existing `User` instance, given the validated data.
+        """
+        instance.lat = validated_data.get('lat', instance.lat)
+        instance.lon = validated_data.get('lon', instance.lon)
+        instance.addr = validated_data.get('addr', instance.addr)
+        instance.amenity = validated_data.get('amenity', instance.amenity)
+        instance.cuisine = validated_data.get('cuisine', instance.cuisine)
+        instance.name = validated_data.get('name', instance.name)
+        instance.opening_hours = validated_data.get('opening_hours', instance.opening_hours)
+        instance.website = validated_data.get('website', instance.website)
+        instance.save()
+        return instance
+
